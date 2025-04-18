@@ -1,0 +1,16 @@
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from create_bot import admins
+
+
+def common_kb(tg_user_id: int):
+    kb_list = [
+        [KeyboardButton(text="Пройти программу на день")],
+        [KeyboardButton(text="Изменить время рассылки")],
+        [KeyboardButton(text="Приостановить рассылку")]
+    ]
+    if tg_user_id in admins:
+        kb_list.append([KeyboardButton(text="⚙️ Админ панель")])
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=kb_list, resize_keyboard=True, one_time_keyboard=True
+    )
+    return keyboard
