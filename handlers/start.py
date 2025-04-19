@@ -31,7 +31,6 @@ async def cmd_start(message: Message):
 
 @start_router.message(CommandStart())
 async def cmd_start(message: Message, state: FSMContext):
-    await state.clear()
     user_id = message.from_user.id
     user = await pg_db.get_user_data(user_id)
     if user is not None:
@@ -39,7 +38,7 @@ async def cmd_start(message: Message, state: FSMContext):
             "Привет, Вы уже зарегистрированы!", reply_markup=common_kb(user_id)
         )
     else:
-        await state.update_data(user_id=user_id)
+        await state.clear()
         async with ChatActionSender.typing(bot=bot, chat_id=message.chat.id):
             await message.answer(GREET_MESSAGE, reply_markup=continue_kb())
         await state.set_state(Agreement.continue_start)
@@ -62,8 +61,7 @@ async def agreement_continue(call: CallbackQuery, state: FSMContext):
 async def agreement_done(call: CallbackQuery, state: FSMContext):
     msg = call.message
     try:
-        data = await state.get_data()
-        await pg_db.insert_user({"user_id": data.get("user_id"), "subscribed": True, "progress": 1, "date_reg" : datetime.datetime.now()})
+        await pg_db.insert_user({"user_id": call.from_user.id, "subscribed": True, "progress": 1, "date_reg" : datetime.datetime.now()})
     except Exception as ex:
         print(ex)
         await msg.answer("Не удалось зарегистрироваться, попробуйте позже")
