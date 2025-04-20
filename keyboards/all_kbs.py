@@ -17,3 +17,10 @@ def common_kb(tg_user_id: int):
         input_field_placeholder="Воспользуйтесь меню:",
     )
     return keyboard
+
+def add_content_kb():
+    kb_list = [
+        [KeyboardButton(text="Разделение"), KeyboardButton(text="Готово")],
+        [KeyboardButton(text="Начать заново"), KeyboardButton(text="Отмена")],
+    ]
+    return ReplyKeyboardMarkup(keyboard=kb_list, resize_keyboard=True)
