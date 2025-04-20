@@ -1,14 +1,12 @@
 import re
 
-import asyncio
-from venv import logger
 from aiogram import Router, F
 from aiogram.filters import Command, CommandObject, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
+from aiogram.types import Message, ReplyKeyboardRemove
 
-from create_bot import bot, admins, pg_db
+from create_bot import admins, pg_db
 from filters.is_admin import IsAdmin
 from keyboards.all_kbs import add_content_kb
 
