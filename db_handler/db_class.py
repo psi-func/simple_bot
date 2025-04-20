@@ -57,14 +57,12 @@ class PostgresHandler:
         async with self.pg_db as manager:
             columns = [
                 {
-                    "name": "content_id",
+                    "name": "day_id",
                     "type": BigInteger,
-                    "options": {"primary_key": True, "autoincrement": True},
+                    "options": {"primary_key": True, "autoincrement": False},
                 },
-                {"name": "day_id", "type": BigInteger},
-                {"name": "text", "type": TEXT},
-                {"name": "audio", "type": TEXT, "options": {"nullable": True}},
-                {"name": "photo", "type": TEXT, "options": {"nullable": True}},
+                {"name": "intro", "type": TEXT},
+                {"name": "script", "type": TEXT},
             ]
         await manager.create_table(table_name=table_name, columns=columns)
 
@@ -98,10 +96,6 @@ class PostgresHandler:
                 update_on_conflict=True,
             )
 
-    async def remove_content(self, day: int, table_name=CONTENT_TABLE):
-        async with self.pg_db as manager:
-            await manager.delete_data(table_name=table_name, where_dict={"day_id": day})
-
     async def insert_content(self, content_data: dict, table_name=CONTENT_TABLE):
         async with self.pg_db as manager:
             await manager.insert_data_with_update(
@@ -109,4 +103,17 @@ class PostgresHandler:
                 records_data=content_data,
                 conflict_column="day_id",
                 update_on_conflict=False,
+            )
+
+    async def remove_content(self, day: int, table_name=CONTENT_TABLE):
+        async with self.pg_db as manager:
+            await manager.delete_data(table_name=table_name, where_dict={"day_id": day})
+
+    async def insert_activity(self, activity_data: dict, table_name=ACTIVITIES_TABLE):
+        async with self.pg_db as manager:
+            await manager.insert_data_with_update(
+                table_name=table_name,
+                records_data=activity_data,
+                conflict_column="day_id",
+                update_on_conflict=True,
             )

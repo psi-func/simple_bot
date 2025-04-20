@@ -12,7 +12,7 @@ async def main():
     try:
         await pg_db.create_table_users()
         await pg_db.create_table_content()
-        # await pg_db.create_table_activities()
+        await pg_db.create_table_activities()
 
         dp.include_router(add_content_router)
         dp.include_router(main_router)

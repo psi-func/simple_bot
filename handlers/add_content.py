@@ -26,6 +26,24 @@ def extract_number(text):
         return None
 
 
+async def add_separator(state: FSMContext) -> bool:
+    data = await state.get_data()
+    content_lst: list = data.get("content", list())
+    breaks_lst: list = data.get("separators", list())
+
+    last_cntr = data.get("last_counter", 0)
+    cur_cntr = len(content_lst)
+    delta = cur_cntr - last_cntr
+
+    if delta <= 0:
+        return False
+
+    breaks_lst.append(delta)
+    await state.update_data({"separators": breaks_lst, "last_counter": cur_cntr})
+
+    return True
+
+
 @add_content_router.message(Command("add_daily_content"), IsAdmin(admins))
 async def start_adding_daily_program(
     message: Message, command: CommandObject, state: FSMContext
@@ -54,41 +72,38 @@ async def start_adding_daily_program(
 
 @add_content_router.message(F.text.lower() == "готово", AddContent.content)
 async def cmd_done(message: Message, state: FSMContext):
+    await add_separator(state)
     data = await state.get_data()
     day = data.get("day")
-    # remove old data
+
+    # add activity
+    await pg_db.insert_activity(
+        {
+            "day_id": day,
+            "intro": data.get("intro"),
+            "script": ",".join(map(str, data.get("separators", list()))),
+        }
+    )
+
+    # remove old content
     await pg_db.remove_content(day)
-    # add all stuff
+
+    # add all contents
     for entry in data.get("content", list()):
         entry["day_id"] = day
         await pg_db.insert_content(entry)
-    
-    # add intro
-    intro = {"text": data.get("intro"), "day_id": day}
-    await pg_db.insert_content(intro)
 
     await state.clear()
+    await message.answer("Добавил контент")
 
 
 @add_content_router.message(F.text.lower() == "разделение", AddContent.content)
 async def cmd_break(message: Message, state: FSMContext):
-    data = await state.get_data()
-    content_lst: list = data.get("content", list())
-    breaks_lst: list = data.get("breaks", list())
-
-    last_cntr = data.get("last_counter", 0)
-    cur_cntr = len(content_lst)
-    delta = cur_cntr - last_cntr
-
-    if delta <= 0:
-        await message.answer("Нечего разделять, жду контент")
-        return
-
-    breaks_lst.append(delta)
-    data.update(breaks=breaks_lst)
-    data.update(last_counter=cur_cntr)
-
-    await message.answer("Добавил разделитель")
+    is_added = await add_separator(state)
+    if is_added:
+        await message.answer("Добавил разделитель")
+    else:
+        await message.answer("Не добавил разделитель, попробуй добавить контент")
 
 
 @add_content_router.message(F.text.lower() == "начать заново", AddContent.content)
