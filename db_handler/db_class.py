@@ -31,6 +31,7 @@ class PostgresHandler:
                     "type": BigInteger,
                     "options": {"primary_key": True, "autoincrement": False},
                 },
+                {"name": "capabilities", "type": Integer},
                 {"name": "subscribed", "type": Boolean},
                 {"name": "progress", "type": Integer},
                 {"name": "date_reg", "type": TIMESTAMP},

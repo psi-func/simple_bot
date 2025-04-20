@@ -61,7 +61,15 @@ async def agreement_continue(call: CallbackQuery, state: FSMContext):
 async def agreement_done(call: CallbackQuery, state: FSMContext):
     msg = call.message
     try:
-        await pg_db.insert_user({"user_id": call.from_user.id, "subscribed": True, "progress": 1, "date_reg" : datetime.datetime.now()})
+        await pg_db.insert_user(
+            {
+                "user_id": call.from_user.id,
+                "capabilities": 0,
+                "subscribed": True,
+                "progress": 1,
+                "date_reg": datetime.datetime.now(),
+            }
+        )
     except Exception as ex:
         print(ex)
         await msg.answer("Не удалось зарегистрироваться, попробуйте позже")
@@ -72,12 +80,14 @@ async def agreement_done(call: CallbackQuery, state: FSMContext):
     await bot.edit_message_reply_markup(chat_id=msg.chat.id, message_id=msg.message_id)
     await state.clear()
 
+
 @start_router.message(Agreement.continue_start)
 async def agreement_fault(message: Message, state: FSMContext):
     await message.answer('Пожалуйста, нажмите кнопку "Продолжить"')
     await state.set_state(Agreement.continue_start)
 
+
 @start_router.message(Agreement.get_agreement)
 async def agreement_fault(message: Message, state: FSMContext):
-    await message.answer('Пожалуйста, подтвердите согласие')
+    await message.answer("Пожалуйста, подтвердите согласие")
     await state.set_state(Agreement.get_agreement)
