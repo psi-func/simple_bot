@@ -110,6 +110,16 @@ class PostgresHandler:
         async with self.pg_db as manager:
             await manager.delete_data(table_name=table_name, where_dict={"day_id": day})
 
+    async def get_daily_contents(self, day: int, table_name=CONTENT_TABLE):
+        async with self.pg_db as manager:
+            activity_info = await manager.select_data(
+                table_name=table_name, where_dict={"day_id": day}
+            )
+            if activity_info:
+                return activity_info
+            else:
+                return None
+
     async def insert_activity(self, activity_data: dict, table_name=ACTIVITIES_TABLE):
         async with self.pg_db as manager:
             await manager.insert_data_with_update(
@@ -118,3 +128,13 @@ class PostgresHandler:
                 conflict_column="day_id",
                 update_on_conflict=True,
             )
+
+    async def get_daily_activity(self, day: int, table_name=ACTIVITIES_TABLE):
+        async with self.pg_db as manager:
+            activity_info = await manager.select_data(
+                table_name=table_name, where_dict={"day_id": day}, one_dict=True
+            )
+            if activity_info:
+                return activity_info
+            else:
+                return None

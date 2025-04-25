@@ -9,6 +9,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.utils.chat_action import ChatActionSender
 
 from create_bot import bot, admins, pg_db
+from handlers.main import get_daily_content
 from filters.is_admin import IsAdmin
 from keyboards.all_kbs import common_kb
 from keyboards.inline_kbs import continue_kb, agree_kb
@@ -77,8 +78,9 @@ async def agreement_done(call: CallbackQuery, state: FSMContext):
         return
 
     await call.answer("Вы подписались на обновления", show_alert=True)
-    await bot.edit_message_reply_markup(chat_id=msg.chat.id, message_id=msg.message_id)
     await state.clear()
+    await bot.edit_message_reply_markup(chat_id=msg.chat.id, message_id=msg.message_id)
+    await get_daily_content(call.from_user.id, state)
 
 
 @start_router.message(Agreement.continue_start)

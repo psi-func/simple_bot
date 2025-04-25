@@ -18,6 +18,7 @@ def common_kb(tg_user_id: int):
     )
     return keyboard
 
+
 def add_content_kb():
     kb_list = [
         [KeyboardButton(text="Разделение"), KeyboardButton(text="Готово")],
